@@ -7,7 +7,7 @@ import { Input } from "@components/ui/input"
 import { Badge } from "@components/ui/badge"
 import { Grid, List, Search, Filter } from "lucide-react"
 
-// Mock photo data
+// Use placeholder image service instead of /placeholder.svg
 const generateMockPhotos = (startId: number, count: number) => {
   const events = ["Sangeet", "Engagement", "Reception", "Bride's Party", "Marriage Ceremony"]
   const photos = []
@@ -20,7 +20,8 @@ const generateMockPhotos = (startId: number, count: number) => {
 
     photos.push({
       id: `photo-${id}`,
-      src: `/placeholder.svg?height=${height}&width=${width}&query=wedding ${event.toLowerCase()} celebration beautiful moment`,
+      // Using placehold.co (lightweight placeholder API)
+      src: `https://placehold.co/${width}x${height}?text=${encodeURIComponent(event)}`,
       alt: `Beautiful moment from ${event} - capturing the joy and celebration of this special occasion`,
       width,
       height,
@@ -63,42 +64,14 @@ const albumFilters = (
     <div>
       <h3 className="text-sm font-medium mb-3">Filter by Event</h3>
       <div className="space-y-2">
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          All Photos
-          <Badge variant="secondary" className="ml-auto">
-            120
-          </Badge>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          Sangeet
-          <Badge variant="secondary" className="ml-auto">
-            25
-          </Badge>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          Engagement
-          <Badge variant="secondary" className="ml-auto">
-            18
-          </Badge>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          Reception
-          <Badge variant="secondary" className="ml-auto">
-            35
-          </Badge>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          Marriage Ceremony
-          <Badge variant="secondary" className="ml-auto">
-            28
-          </Badge>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
-          Bride's Party
-          <Badge variant="secondary" className="ml-auto">
-            14
-          </Badge>
-        </Button>
+        {["All Photos", "Sangeet", "Engagement", "Reception", "Marriage Ceremony", "Bride's Party"].map((label, idx) => (
+          <Button key={idx} variant="ghost" size="sm" className="w-full justify-start">
+            {label}
+            <Badge variant="secondary" className="ml-auto">
+              {Math.floor(Math.random() * 30) + 10}
+            </Badge>
+          </Button>
+        ))}
       </div>
     </div>
 
@@ -126,12 +99,9 @@ function AlbumsPage() {
   const [hasMore, setHasMore] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Check if mobile
+  // Detect mobile screen
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
@@ -139,20 +109,15 @@ function AlbumsPage() {
 
   const loadMorePhotos = async () => {
     if (loading || !hasMore) return
-
     setLoading(true)
 
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
     const newPhotos = generateMockPhotos(photos.length + 1, 12)
     setPhotos((prev) => [...prev, ...newPhotos])
 
-    // Stop loading more after 100 photos for demo
     if (photos.length + newPhotos.length >= 100) {
       setHasMore(false)
     }
-
     setLoading(false)
   }
 
@@ -195,7 +160,5 @@ function AlbumsPage() {
 }
 
 export default function Page() {
-  return (
-      <AlbumsPage />
-  )
+  return <AlbumsPage />
 }

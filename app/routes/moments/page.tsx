@@ -4,17 +4,21 @@ import { EventSection } from "@components/moments/event-section"
 import { Button } from "@components/ui/button"
 import { Music, Heart, Users, Sparkles, Church } from "lucide-react"
 
-// Mock media data generator
+// Mock media data generator (uses placehold.co instead of /placeholder.svg)
 const generateEventMedia = (eventName: string, count: number) => {
   const media: { id: string; type: "video" | "photo"; src: string; alt: string; thumbnail?: string }[] = []
   for (let i = 1; i <= count; i++) {
     const isVideo = Math.random() > 0.7
+    const width = 600
+    const height = 400
     media.push({
       id: `${eventName.toLowerCase()}-${i}`,
       type: isVideo ? "video" : "photo",
-      src: `/placeholder.svg?height=400&width=600&query=${eventName} wedding celebration beautiful moment ${i}`,
+      src: `https://placehold.co/${width}x${height}?text=${encodeURIComponent(eventName)}+${i}`,
       alt: `Beautiful moment from ${eventName} celebration`,
-      thumbnail: isVideo ? `/placeholder.svg?height=400&width=600&query=${eventName} video thumbnail` : undefined,
+      thumbnail: isVideo
+        ? `https://placehold.co/${width}x${height}?text=${encodeURIComponent(eventName)}+Video`
+        : undefined,
     })
   }
   return media
@@ -153,57 +157,7 @@ const eventSections = [
   },
 ]
 
-const momentsSidebar = (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-sm font-medium mb-3">Event Timeline</h3>
-      <div className="space-y-2">
-        {eventSections.map((section) => (
-          <Button
-            key={section.id}
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-left h-auto p-3"
-            onClick={() => {
-              document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" })
-            }}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
-                style={{ backgroundColor: section.theme.primary }}
-              ></div>
-              <div>
-                <div className="font-medium text-sm">{section.title}</div>
-                <div className="text-xs text-muted-foreground">{section.date}</div>
-              </div>
-            </div>
-          </Button>
-        ))}
-      </div>
-    </div>
-
-    <div className="pt-4 border-t">
-      <h3 className="text-sm font-medium mb-3">Quick Stats</h3>
-      <div className="space-y-2 text-sm text-muted-foreground">
-        <div className="flex justify-between">
-          <span>Total Events</span>
-          <span>5</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Photos & Videos</span>
-          <span>63</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Duration</span>
-          <span>4 Days</span>
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
-function MomentsPage() {
+const MomentsPage = () => {
   const [activeSection, setActiveSection] = useState("")
 
   useEffect(() => {
@@ -227,6 +181,58 @@ function MomentsPage() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  const momentsSidebar = (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-sm font-medium mb-3">Event Timeline</h3>
+        <div className="space-y-2">
+          {eventSections.map((section) => (
+            <Button
+              key={section.id}
+              variant={activeSection === section.id ? "secondary" : "ghost"}
+              size="sm"
+              className="w-full justify-start text-left h-auto p-3"
+              onClick={() => {
+                document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" })
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+                  style={{ backgroundColor: section.theme.primary }}
+                ></div>
+                <div>
+                  <div className="font-medium text-sm">{section.title}</div>
+                  <div className="text-xs text-muted-foreground">{section.date}</div>
+                </div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t">
+        <h3 className="text-sm font-medium mb-3">Quick Stats</h3>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex justify-between">
+            <span>Total Events</span>
+            <span>{eventSections.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Photos & Videos</span>
+            <span>
+              {eventSections.reduce((acc, e) => acc + e.media.length, 0)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Duration</span>
+            <span>4 Days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <AppLayout secondarySidebar={momentsSidebar}>
       <div className="max-w-6xl mx-auto p-4 md:p-8">
@@ -238,7 +244,7 @@ function MomentsPage() {
             ceremony, every moment tells our beautiful love story.
           </p>
           <div className="mt-6 flex justify-center">
-            <div className="w-24 h-1 bg-gradient-gold-rose rounded-full"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-pink-500 via-yellow-500 to-red-500 rounded-full"></div>
           </div>
         </div>
 
@@ -262,7 +268,5 @@ function MomentsPage() {
 }
 
 export default function Page() {
-  return (
-      <MomentsPage />
-  )
+  return <MomentsPage />
 }

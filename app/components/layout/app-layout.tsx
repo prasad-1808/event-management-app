@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { PrimarySidebar } from "@components/navigation/primary-sidebar"
 import { SecondarySidebar } from "@components/navigation/secondary-sidebar"
