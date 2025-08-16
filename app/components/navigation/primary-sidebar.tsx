@@ -1,14 +1,8 @@
 import { cn } from '@lib/utils';
 import { Button } from '@components/ui/button';
 import { Home, ImageIcon, Calendar, User, Settings, LogOut } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom'; // ✅ FIXED import
-
-// Example placeholder for auth context (replace with your actual context)
-const user = { name: 'John Doe', role: 'admin' };
-const logout = () => {
-  console.log('User logged out');
-  // Add your logout logic here
-};
+import { useLocation, Link } from 'react-router-dom';
+import { useAuth } from 'react-oidc-context';
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
@@ -21,6 +15,18 @@ const navigation = [
 export function PrimarySidebar() {
   const location = useLocation();
   const pathname = location.pathname;
+  const auth = useAuth(); // ✅ hook inside component
+
+  const user = {
+    name: auth.user?.profile?.name || 'John Doe',
+    role: 'admin',
+  };
+
+  const handleLogout = () => {
+  auth.signoutRedirect({
+    post_logout_redirect_uri: 'http://localhost:5173/', // ✅ redirect to login
+  });
+};
 
   return (
     <div className="flex h-full w-64 flex-col bg-sidebar border-r border-sidebar-border">
@@ -37,7 +43,7 @@ export function PrimarySidebar() {
           return (
             <Link
               key={item.name}
-              to={item.href} // ✅ Link from react-router-dom
+              to={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-sidebar-accent',
                 isActive
@@ -59,9 +65,9 @@ export function PrimarySidebar() {
             <User className="h-4 w-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user.name}</p>
             <p className="text-xs text-sidebar-foreground/60 truncate capitalize">
-              {user?.role} access
+              {user.role} access
             </p>
           </div>
         </div>
@@ -69,7 +75,7 @@ export function PrimarySidebar() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={logout}
+          onClick={handleLogout} // ✅ fixed
           className="w-full justify-start text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
         >
           <LogOut className="h-4 w-4 mr-2" />
