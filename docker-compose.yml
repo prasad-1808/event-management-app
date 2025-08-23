@@ -6,13 +6,18 @@ services:
     container_name: postgres_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: admin         # DB username
-      POSTGRES_PASSWORD: admin  # DB password
-      POSTGRES_DB: mydb            # default database
+      POSTGRES_USER: admin             # DB username
+      POSTGRES_PASSWORD: admin         # DB password
+      POSTGRES_DB: myappdb             # default database (created only on first run if volume empty)
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d myappdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -24,7 +29,45 @@ services:
     ports:
       - "8081:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy   # wait until DB is ready
+
+  backend:
+    build:
+      context: ./backend
+    container_name: django-backend
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8001
+      "
+    volumes:
+      - ./backend:/app   # live code reload in dev
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy   # wait until DB is ready
+    environment:
+      DB_NAME: myappdb
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_HOST: postgres
+      DB_PORT: 5432
+  
+  frontend:
+    container_name: react-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"   # Dev mode (npm start) runs on 3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

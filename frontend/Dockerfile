@@ -1,22 +1,20 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
-WORKDIR /app
-RUN npm ci
-
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
-
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-RUN npm run build
-
+# Use Node.js Alpine (lightweight)
 FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
+
+# Set working directory
 WORKDIR /app
-CMD ["npm", "run", "start"]
+
+# Install dependencies only when package.json or lock file changes
+COPY package*.json ./
+
+# Install ALL dependencies (including devDependencies for development)
+RUN npm install
+
+# Copy source code (but in dev we usually mount this as a volume via docker-compose)
+COPY . .
+
+# Expose Vite’s default port
+EXPOSE 5173
+
+# Default command
+CMD ["npm", "run", "dev"]
