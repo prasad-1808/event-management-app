@@ -128,7 +128,7 @@ function AlbumsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-serif font-bold text-primary mb-2">Photo Albums</h1>
+              <h1 className="text-3xl font-serif font-bold text-primary mb-2">Photo Album</h1>
               <p className="text-muted-foreground">Browse through our beautiful collection of memories</p>
             </div>
 
